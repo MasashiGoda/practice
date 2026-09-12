@@ -30,12 +30,12 @@ PYTHONPATH=./vendor python3 -m pytest tests/ -q
 機能追加・変更は、思いつきで直接コードを書かず、必ず以下のコマンドを順番に使う。
 各コマンドの詳細な手順は `.claude/commands/*.md` を参照。
 
-1. `/plan <やりたいこと>` — 課題と既存コードを読み、実装方針を `tasks/<id>-<slug>.md` に書き出す
+1. `/dev-plan <やりたいこと>` — 課題と既存コードを読み、実装方針を `tasks/<id>-<slug>.md` に書き出す
 2. `/approve <id>` — 方針を承認する、またはコメント付きで差し戻す(承認ゲート)
 3. `/implement <id>` — `feature/<id>-<slug>` ブランチを作成し、承認された方針通りに実装する
 4. `/test <id>` — 動作確認テストを書いて実行する(TDD: 可能な範囲でRed→Green)
 5. `/design-audit <id>` — 画面(templates/static)に変更がある場合のみ、使い勝手・禁則を点検する
-6. `/review <id>` — 差分をレビューし、結果を課題ファイルにコメントとして記録する
+6. `/dev-review <id>` — 差分をレビューし、結果を課題ファイルにコメントとして記録する
 7. `/merge <id>` — レビュー合格後、**必ず確認を挟んでから** `master` にマージする
 
 タスクの状態は `tasks/INDEX.md`(一覧表)と `tasks/<id>-<slug>.md`(詳細)で管理する。
