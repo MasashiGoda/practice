@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>TODOリスト</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>TODOリスト</h1>
+
+    <form action="{{ url_for('create_todo') }}" method="post" class="add-form">
+      <input type="text" name="title" placeholder="やることを入力..." autofocus required>
+      <button type="submit">追加</button>
+    </form>
+
+    <ul class="todo-list">
+      {% for todo in todos %}
+      <li class="{{ 'done' if todo.done else '' }}">
+        <form action="{{ url_for('toggle_todo', todo_id=todo.id) }}" method="post" class="toggle-form">
+          <button type="submit" class="toggle-btn" aria-label="完了切替">
+            {{ '☑' if todo.done else '☐' }}
+          </button>
+        </form>
+        <span class="title">{{ todo.title }}</span>
+        <form action="{{ url_for('delete_todo', todo_id=todo.id) }}" method="post" class="delete-form">
+          <button type="submit" class="delete-btn" aria-label="削除">✕</button>
+        </form>
+      </li>
+      {% else %}
+      <li class="empty">タスクはまだありません</li>
+      {% endfor %}
+    </ul>
+  </main>
+</body>
+</html>
