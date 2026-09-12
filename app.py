@@ -6,11 +6,12 @@ from flask import Flask, g, redirect, render_template, request, url_for
 DB_PATH = Path(__file__).parent / "todo.db"
 
 app = Flask(__name__)
+app.config.setdefault("DATABASE", str(DB_PATH))
 
 
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(app.config["DATABASE"])
         g.db.row_factory = sqlite3.Row
     return g.db
 
@@ -23,7 +24,7 @@ def close_db(exception=None):
 
 
 def init_db():
-    with sqlite3.connect(DB_PATH) as db:
+    with sqlite3.connect(app.config["DATABASE"]) as db:
         db.execute(
             """
             CREATE TABLE IF NOT EXISTS todos (
