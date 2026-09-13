@@ -45,4 +45,15 @@ TODOに「計画した日」(いつやる予定か)と「期限日」(締め切�
 
 - 既存の `todo.db` のデータは一度破棄してよい。そのためマイグレーション(`PRAGMA table_info` での列存在チェック + `ALTER TABLE`)は不要にして良く、`CREATE TABLE` のスキーマ定義に `planned_date` / `due_date` を最初から含める形にシンプル化できる。→ 対応済み。`実装方針` からマイグレーション処理を削除し、既存 `todo.db` を削除して作り直す方針に更新した。
 
-## ステータス: 承認済み(2026-09-13)
+## 実装メモ
+
+- 変更ファイル: `app.py`, `templates/index.html`, `static/style.css`
+- `todos` テーブルの `CREATE TABLE IF NOT EXISTS` に `planned_date TEXT`, `due_date TEXT` を追加(マイグレーションなし、方針通り)。
+- 開発用の既存 `todo.db` は削除済み(次回起動時に新スキーマで再作成される)。
+- `create_todo()` で `planned_date` / `due_date` を読み取り、空文字は `None` としてINSERT。
+- 追加フォームに `<input type="date">` を2つ追加(`required` なし、任意入力)。
+- 一覧の `<li>` 内でタイトルと日付表示をまとめる `.content` div を新設(元々 `.title` に付いていた `flex: 1` を `.content` に移動)。両方の日付が未設定なら `.dates` ごと非表示。
+- `.add-form` はテキスト欄を1行目、日付欄を2行目に折り返す `flex-wrap` レイアウトに変更(狭い画面でも崩れないように)。
+- 既存テスト(`tests/test_todos.py`)は変更なしで5件すべて通過を確認済み。日付関連のテストは次の `/test` ステップで追加する。
+
+## ステータス: 実装完了(2026-09-13)
