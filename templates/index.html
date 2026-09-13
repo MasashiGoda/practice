@@ -11,6 +11,14 @@
 
     <form action="{{ url_for('create_todo') }}" method="post" class="add-form">
       <input type="text" name="title" placeholder="やることを入力..." autofocus required>
+      <label class="date-field">
+        計画日
+        <input type="date" name="planned_date">
+      </label>
+      <label class="date-field">
+        期限日
+        <input type="date" name="due_date">
+      </label>
       <button type="submit">追加</button>
     </form>
 
@@ -22,7 +30,16 @@
             {{ '☑' if todo.done else '☐' }}
           </button>
         </form>
-        <span class="title">{{ todo.title }}</span>
+        <div class="content">
+          <span class="title">{{ todo.title }}</span>
+          {% if todo.planned_date or todo.due_date %}
+          <span class="dates">
+            {%- if todo.planned_date %}計画: {{ todo.planned_date }}{% endif -%}
+            {%- if todo.planned_date and todo.due_date %} / {% endif -%}
+            {%- if todo.due_date %}期限: {{ todo.due_date }}{% endif -%}
+          </span>
+          {% endif %}
+        </div>
         <form action="{{ url_for('delete_todo', todo_id=todo.id) }}" method="post" class="delete-form">
           <button type="submit" class="delete-btn" aria-label="削除">✕</button>
         </form>

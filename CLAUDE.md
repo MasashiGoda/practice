@@ -36,7 +36,7 @@ PYTHONPATH=./vendor python3 -m pytest tests/ -q
 4. `/test <id>` — 動作確認テストを書いて実行する(TDD: 可能な範囲でRed→Green)
 5. `/design-audit <id>` — 画面(templates/static)に変更がある場合のみ、使い勝手・禁則を点検する
 6. `/dev-review <id>` — 差分をレビューし、結果を課題ファイルにコメントとして記録する
-7. `/merge <id>` — レビュー合格後、**必ず確認を挟んでから** `master` にマージする
+7. `/merge <id>` — レビュー合格後、**必ず確認を挟んでから** `feature/<id>-<slug>` を `origin` にpushし、`master` へのPull Requestを作成する。マージ自体もPR経由で行う(ローカルで直接 `master` にマージしない)。
 
 タスクの状態は `tasks/INDEX.md`(一覧表)と `tasks/<id>-<slug>.md`(詳細)で管理する。
 ステップを飛ばして実装・承認・マージをしない。各コマンドは前提ステータスを確認し、
@@ -46,5 +46,5 @@ PYTHONPATH=./vendor python3 -m pytest tests/ -q
 
 - ブランチ名: `feature/<id>-<slug>`
 - mainブランチ名: `master`
-- `origin`(GitHub)は設定済みだが、指示がない限り `push` しない(この開発フローはローカルの `master` へのマージまでを扱う)
+- `origin`(GitHub)は設定済み。マージはPRベースで行う: `/merge <id>` の中でレビュー合格後・確認を挟んだ上でブランチを `push` し、`master` 向けのPull Requestを作成する。それ以外のタイミングでの `push` は指示がない限り行わない。
 - テストは `pytest`、TDD(Red→Green→Refactor)を基本とする

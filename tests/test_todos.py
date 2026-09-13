@@ -34,3 +34,27 @@ def test_delete_todo_removes_it(client):
     client.post(f"/todos/{todo_id}/delete")
     res = client.get("/")
     assert "牛乳を買う".encode() not in res.data
+
+
+def test_create_todo_with_dates_shows_them_in_list(client):
+    client.post(
+        "/todos",
+        data={
+            "title": "牛乳を買う",
+            "planned_date": "2026-09-20",
+            "due_date": "2026-09-25",
+        },
+    )
+    res = client.get("/")
+    body = res.data.decode()
+    assert "計画: 2026-09-20" in body
+    assert "期限: 2026-09-25" in body
+
+
+def test_create_todo_without_dates_shows_no_dates(client):
+    client.post("/todos", data={"title": "牛乳を買う"})
+    res = client.get("/")
+    body = res.data.decode()
+    assert "牛乳を買う" in body
+    assert "計画:" not in body
+    assert "期限:" not in body
