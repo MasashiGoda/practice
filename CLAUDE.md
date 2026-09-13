@@ -16,6 +16,9 @@ PYTHONPATH=./vendor python3 app.py
 
 # テスト
 PYTHONPATH=./vendor python3 -m pytest tests/ -q
+
+# セキュリティチェック(決定論的な静的解析)
+PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt
 ```
 
 **重要な注意点**: Claude Codeのサンドボックス化されたBashはネットワーク的に隔離されている。
@@ -35,7 +38,7 @@ PYTHONPATH=./vendor python3 -m pytest tests/ -q
    チャットで完結する(関所①)。
 2. `/implement <id>` — `feature/<id>-<slug>` ブランチを作成し、承認された方針をTDD(Red→Green)で
    実装する。テストは後付けではなく、機能単位で「失敗するテストを先に書く→実装→Green確認」を
-   繰り返しながら進める。
+   繰り返しながら進める。最後に `bandit`(決定論的な静的解析)でセキュリティチェックも行う。
 3. `/dev-review <id>` — 差分のコードレビューを行う。`templates/`・`static/` に変更がある場合のみ、
    その中でデザイン監査も行い、ユーザーに実機確認を1回だけ依頼する(関所②、UI変更がなければ
    自動で通過)。
@@ -57,3 +60,5 @@ PYTHONPATH=./vendor python3 -m pytest tests/ -q
 - mainブランチ名: `master`
 - `origin`(GitHub)は設定済み。マージはPRベースで行う: `/merge <id>` の中でレビュー合格後・確認を挟んだ上でブランチを `push` し、`master` 向けのPull Requestを作成する。それ以外のタイミングでの `push` は指示がない限り行わない。
 - テストは `pytest`、TDD(Red→Green→Refactor)を基本とする
+- セキュリティチェックは `bandit`(決定論的な静的解析)を `/implement` の中で実行する。Medium以上の
+  重要度・確信度の指摘は修正必須。意図的に許容する場合のみ `# nosec <ID> -- 理由` を付ける
