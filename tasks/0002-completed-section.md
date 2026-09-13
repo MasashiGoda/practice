@@ -79,4 +79,33 @@
 - 実行コマンド: `PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt`(生ログ: `reports/0002-bandit.txt`)
 - 結果: **No issues identified.**(Medium以上の重要度・確信度の指摘なし。既存の `# nosec B201` 以外の抑制は追加していない)
 
-## ステータス: テスト合格(2026-09-13)
+## デザイン監査
+
+- 差分対象: `templates/index.html`, `static/style.css`
+- 静的確認: モバイル幅で崩れる要素なし、`--muted` トークンでライト/ダーク両対応、日本語禁則の問題なし、
+  既存の `overflow-wrap: break-word` をマクロ経由で継承し長いタイトルも折り返し可能、
+  `<summary>` はブラウザ標準でキーボードフォーカス・Tab移動に対応。
+- 軽微な所見(指摘ではなく観察): `.completed-section summary` のタップ領域はやや控えめだが、
+  既存の `.toggle-btn`/`.delete-btn` と同程度の慣習に合わせた設計であり、ブロッキングではないと判断。
+- ユーザーに実機(`PYTHONPATH=./vendor python3 app.py`)で以下を確認してもらい、OKを確認:
+  - 完了済みタスクが「完了済み (N件)」の折りたたみ行にまとまり、クリックで展開・タイトル/日付が見えること
+  - モバイル幅・ライト/ダーク両方で問題ないこと
+  - 全部完了時に変な空メッセージが出ないこと
+
+## レビュー
+
+- 対象: `feature/0002-completed-section` と `master` の全差分(`templates/index.html`, `static/style.css`, `tests/test_todos.py`, `reports/0002-*.txt`)
+- 正しさ: `done` はSQLite上でINTEGER(0/1)のため、Jinjaの `rejectattr('done')`/`selectattr('done')`(引数なし=truthiness判定)による分割は意図通り動作する。空状態の分岐(`{% if not incomplete and not completed %}` → `{% elif incomplete %}`)は、「未完了のみ0件・完了済みあり」の場合にどちらにも該当せず完了済みセクションだけが描画される設計になっており、意図通り。
+- 計画との整合性: `## 実装方針` に書かれた内容(マクロ化・分割・折りたたみセクション・空状態調整)のみが実装されており、`app.py`(データモデル・ルーティング)は無変更。逸脱なし。
+- スコープ外の遵守: 完了日時によるソート、開閉状態の保存、個別タスクのさらなる詳細展開、一括削除・アーカイブのいずれにも手を出していないことを確認。
+- テストの実効性: 4件とも実際のレスポンス本文(文字列の位置関係・出現回数)を検証しており、形だけのテストではない。`test_active_and_completed_lists_split_without_duplication` は重複表示のリグレッションも検出できる。
+- セキュリティ: `## セキュリティチェック` の `bandit` 結果は `No issues identified.`。今回の差分で新規の `# nosec` 抑制は追加されていない(既存の `# nosec B201` のみ)。
+- **指摘なし**(重大な問題は見つからなかった)。
+
+## セキュリティレビュー(LLM)
+
+- `security-review` スキルで `feature/0002-completed-section` の差分をレビュー。生の結果: `reports/0002-security-review.md`
+- 要約: 既存の `<li>` マークアップをJinjaマクロに切り出しただけでエスケープ挙動は変更前と同一(`|safe`/`Markup` 未使用)。表示の分割(`selectattr`/`rejectattr`)は既存の `todos` 取得結果をテンプレート側で分けるのみで、新しいDBクエリ・ルート・認可境界は発生していない。`app.py` は今回無変更。
+- **指摘なし**("No qualifying vulnerabilities found.")
+
+## ステータス: レビュー合格(2026-09-13)
