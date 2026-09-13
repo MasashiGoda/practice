@@ -11,10 +11,15 @@ argument-hint: <id>
 ## 手順
 
 1. `tasks/<id>-*.md` を読み、ステータスが「レビュー合格」であることを確認する。そうでなければ処理を止め、必要なステップを案内する。
-2. マージ内容の要約(変更ファイル、テスト結果、レビュー結論)をユーザーに提示し、**必ず**「`feature/<id>-<slug>` を push してPRを作成してよいですか?」と明示的に確認する。承認が得られるまでpush・PR作成を実行しない。
-3. 承認後:
-   - `git push -u origin feature/<id>-<slug>`
-   - `gh pr create` でPRを作成する(base: `master`、タイトルは課題タイトル、本文に変更概要・テスト結果・レビュー結論を記載)。`gh` が使えない環境の場合は、GitHubの比較URL(`https://github.com/<owner>/<repo>/compare/master...feature/<id>-<slug>?expand=1`)を案内し、ユーザー自身にPR作成を依頼する。
+2. マージ内容の要約(変更ファイル、テスト結果、レビュー結論)をユーザーに提示する。
+3. **push はこのサンドボックスからは実行しない**(GitHub認証情報がなく毎回失敗するため確認済み)。
+   最初からユーザーに以下を依頼する:
+   ```
+   ! git push -u origin feature/<id>-<slug>
+   ```
+   push完了の報告を待ってから次に進む(承認を求める確認は、このpush依頼と兼ねてよい)。
+   - `gh` が使える場合はこちらで `gh pr create` を試みる(base: `master`、タイトルは課題タイトル、本文に変更概要・テスト結果・レビュー結論を記載)。
+     使えない/失敗する場合は、GitHubの比較URL(`https://github.com/<owner>/<repo>/compare/master...feature/<id>-<slug>?expand=1`)を案内し、ユーザー自身にPR作成を依頼する。
 4. PRのマージは、ユーザーがGitHub上で行うか、ユーザーから明示的に指示があった場合のみ `gh pr merge` で実行する(無断でマージしない)。
 5. マージ確認後:
    - `git fetch origin` してから `git checkout master && git pull origin master` でローカルを最新化する。

@@ -28,6 +28,11 @@ PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt
 (`!` プレフィックス、または別ターミナル)。エージェント側で `curl` 等による
 自動確認を試みない。
 
+同様に、このサンドボックスにはGitHub向けの認証情報がなく `git push` は常に失敗する
+(`fatal: could not read Username for 'https://github.com'`)。確認済みの制約のため、
+`/merge` では最初から `push` をユーザーに `!` プレフィックスで実行してもらう(こちらで
+試して失敗を報告する、という手順は踏まない)。
+
 ## 開発フロー(4ステップ・関所3箇所)
 
 機能追加・変更は、思いつきで直接コードを書かず、必ず以下のコマンドを順番に使う。
