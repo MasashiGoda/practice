@@ -88,4 +88,10 @@ TODOに「計画した日」(いつやる予定か)と「期限日」(締め切�
 - 参考(指摘ではなく観察): 「計画日のみ」「期限日のみ」の片方だけ指定するケースのテストは無いが、承認済みのテスト方針の範囲外のため今回は追加不要と判断。将来テストを厚くする際の候補として記録のみ残す。
 - **指摘なし**(重大な問題は見つからなかった)。
 
-## ステータス: レビュー合格(2026-09-13)
+## マージ
+
+- 方式: PRベース(GitHub `MasashiGoda/practice`)。`feature/0001-task-dates` をpushし、PR #1 を作成、GitHub上でユーザーがマージ。
+- マージコミット: `d295e75`(`Merge pull request #1 from MasashiGoda/feature/0001-task-dates`)、マージ先: `master`
+- ローカル `master` を `origin/master` に同期後、`PYTHONPATH=./vendor python3 -m pytest tests/ -q` で7件全て合格を再確認済み。
+
+## ステータス: マージ済み(2026-09-13)
