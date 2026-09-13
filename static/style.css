@@ -112,6 +112,21 @@ h1 {
   padding: 1.5rem;
 }
 
+.completed-section {
+  margin-top: 1rem;
+}
+
+.completed-section summary {
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.4rem 0.2rem;
+}
+
+.completed-section .todo-list {
+  margin-top: 0.5rem;
+}
+
 .toggle-form, .delete-form {
   display: inline;
 }
