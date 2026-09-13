@@ -24,16 +24,19 @@ argument-hint: <id>
    e. 次の単位に進む。
 6. `## 実装方針` に書かれた内容**のみ**を実装する。`## スコープ外` に書かれたことはやらない。範囲を広げたくなった場合はユーザーに確認する。
 7. 実装中に方針とズレが生じた場合(想定より大きな変更が必要と判明した等)は、一旦止めてユーザーに相談する。黙って計画を逸脱しない。
-8. 全単位が完了したら、最終確認として全体を実行する: `PYTHONPATH=./vendor python3 -m pytest tests/ -q`。失敗があれば直してGreenにする。
-9. **セキュリティチェック(決定論的ツール)**: `PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt` を実行する。
+8. 全単位が完了したら、最終確認として全体を実行し、生の出力を `mkdir -p reports` の上で
+   `reports/<id>-pytest.txt` に保存する(例: `PYTHONPATH=./vendor python3 -m pytest tests/ -q | tee reports/<id>-pytest.txt`)。
+   失敗があれば直してGreenになるまで繰り返す(保存されるのは最終的にGreenになった実行結果)。
+9. **セキュリティチェック(決定論的ツール)**: `PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt | tee reports/<id>-bandit.txt` を実行する。
    - `bandit` が未インストールなら `pip3 install --no-cache-dir --target=./vendor bandit` で導入してから実行する。
    - Medium以上の重要度・確信度の指摘は、テストの失敗と同様に必ず対応する: 実装を修正するか、意図的に許容する場合のみ該当行に `# nosec <ID> -- 理由` を付けて明示する(理由なしの抑制はしない)。
-   - 対応後、`No issues identified.` になるまで繰り返す。
-10. 意味のある単位でコミットする(テストと実装を近い単位でまとめてよい)。
+   - 対応後、`No issues identified.` になるまで繰り返す(保存されるのは最終的にクリーンになった実行結果)。
+10. 意味のある単位でコミットする(テストと実装を近い単位でまとめてよい)。`reports/<id>-*.txt` は
+    通常のプロジェクトファイルとしてコミットする(`vendor/` のようにgitignore対象ではない)。
 11. タスクファイルに以下を記録する:
     - `## 実装メモ` — 変更したファイル一覧と実装上の判断
-    - `## テスト結果` — 追加したテストの一覧・実行コマンド・最終結果(件数)
-    - `## セキュリティチェック` — 実行コマンド・検出件数・対応内容(`# nosec` で許容した場合はその理由も記載)
+    - `## テスト結果` — 追加したテストの一覧・要約、生ログは `reports/<id>-pytest.txt` を参照する旨のリンク
+    - `## セキュリティチェック` — 検出件数・対応内容の要約(`# nosec` で許容した場合はその理由も記載)、生ログは `reports/<id>-bandit.txt` を参照する旨のリンク
     ステータスを「テスト合格」に更新し、`tasks/INDEX.md` のブランチ欄も更新する。
 12. 次のステップ `/dev-review <id>` を案内する。
 

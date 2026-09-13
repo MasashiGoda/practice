@@ -39,9 +39,9 @@ PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt
 2. `/implement <id>` — `feature/<id>-<slug>` ブランチを作成し、承認された方針をTDD(Red→Green)で
    実装する。テストは後付けではなく、機能単位で「失敗するテストを先に書く→実装→Green確認」を
    繰り返しながら進める。最後に `bandit`(決定論的な静的解析)でセキュリティチェックも行う。
-3. `/dev-review <id>` — 差分のコードレビューを行う。`templates/`・`static/` に変更がある場合のみ、
-   その中でデザイン監査も行い、ユーザーに実機確認を1回だけ依頼する(関所②、UI変更がなければ
-   自動で通過)。
+3. `/dev-review <id>` — 差分のコードレビューと、`security-review` スキルによるLLMベースの
+   セキュリティレビューを行う。`templates/`・`static/` に変更がある場合のみ、その中でデザイン
+   監査も行い、ユーザーに実機確認を1回だけ依頼する(関所②、UI変更がなければ自動で通過)。
 4. `/merge <id>` — レビュー合格後、**必ず確認を挟んでから**(関所③)`feature/<id>-<slug>` を
    `origin` にpushし、`master` へのPull Requestを作成する。マージ自体もPR経由で行う
    (ローカルで直接 `master` にマージしない)。
@@ -60,5 +60,9 @@ PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt
 - mainブランチ名: `master`
 - `origin`(GitHub)は設定済み。マージはPRベースで行う: `/merge <id>` の中でレビュー合格後・確認を挟んだ上でブランチを `push` し、`master` 向けのPull Requestを作成する。それ以外のタイミングでの `push` は指示がない限り行わない。
 - テストは `pytest`、TDD(Red→Green→Refactor)を基本とする
-- セキュリティチェックは `bandit`(決定論的な静的解析)を `/implement` の中で実行する。Medium以上の
-  重要度・確信度の指摘は修正必須。意図的に許容する場合のみ `# nosec <ID> -- 理由` を付ける
+- セキュリティチェックは二段構え: `bandit`(決定論的な静的解析、`/implement` 内)と
+  `security-review` スキル(LLMベース、`/dev-review` 内)。`bandit` のMedium以上の指摘は修正必須、
+  意図的に許容する場合のみ `# nosec <ID> -- 理由` を付ける
+- `reports/<id>-pytest.txt`・`reports/<id>-bandit.txt`・`reports/<id>-security-review.md` に
+  各タスクの実行結果(生ログ)を保存し、リポジトリにコミットする(`vendor/` と異なりgitignore対象外)。
+  後から任意のタスクの実行結果を参照できるようにするための記録用ディレクトリ
