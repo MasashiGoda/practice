@@ -36,7 +36,7 @@ PYTHONPATH=./vendor python3 -m pytest tests/ -q
 2. `/implement <id>` — `feature/<id>-<slug>` ブランチを作成し、承認された方針をTDD(Red→Green)で
    実装する。テストは後付けではなく、機能単位で「失敗するテストを先に書く→実装→Green確認」を
    繰り返しながら進める。
-3. `/review <id>` — 差分のコードレビューを行う。`templates/`・`static/` に変更がある場合のみ、
+3. `/dev-review <id>` — 差分のコードレビューを行う。`templates/`・`static/` に変更がある場合のみ、
    その中でデザイン監査も行い、ユーザーに実機確認を1回だけ依頼する(関所②、UI変更がなければ
    自動で通過)。
 4. `/merge <id>` — レビュー合格後、**必ず確認を挟んでから**(関所③)`feature/<id>-<slug>` を
@@ -47,8 +47,9 @@ PYTHONPATH=./vendor python3 -m pytest tests/ -q
 ステップを飛ばして実装・承認・マージをしない。各コマンドは前提ステータスを確認し、
 満たしていなければ処理を止める。
 
-旧フローにあった `/approve`・`/test`・`/design-audit`・`/dev-review` は上記4コマンドに
-統合され廃止済み(呼び出すと案内が表示される)。
+旧フローにあった `/approve`・`/test`・`/design-audit` は上記4コマンドに統合され廃止済み
+(呼び出すと案内が表示される)。`/dev-review` は名称を維持したまま `/design-audit` を
+吸収している(組み込みコマンド `/review` との名前衝突を避けるため、統合先はこの名前にした)。
 
 ## 規約
 
