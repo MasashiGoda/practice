@@ -31,7 +31,9 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 done INTEGER NOT NULL DEFAULT 0,
-                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                planned_date TEXT,
+                due_date TEXT
             )
             """
         )
@@ -50,8 +52,13 @@ def index():
 def create_todo():
     title = request.form.get("title", "").strip()
     if title:
+        planned_date = request.form.get("planned_date", "").strip() or None
+        due_date = request.form.get("due_date", "").strip() or None
         db = get_db()
-        db.execute("INSERT INTO todos (title) VALUES (?)", (title,))
+        db.execute(
+            "INSERT INTO todos (title, planned_date, due_date) VALUES (?, ?, ?)",
+            (title, planned_date, due_date),
+        )
         db.commit()
     return redirect(url_for("index"))
 

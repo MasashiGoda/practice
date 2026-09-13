@@ -42,18 +42,27 @@ h1 {
 
 .add-form {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
 
 .add-form input {
-  flex: 1;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card);
   color: var(--text);
   font-size: 1rem;
+}
+
+.add-form input[type="text"] {
+  flex: 1;
+  min-width: 100%;
+}
+
+.add-form input[type="date"] {
+  flex: 1;
 }
 
 .add-form button {
@@ -111,8 +120,21 @@ h1 {
   color: var(--accent);
 }
 
-.title {
+.content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.title {
+  overflow-wrap: break-word;
+}
+
+.dates {
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 
 li.done .title {
