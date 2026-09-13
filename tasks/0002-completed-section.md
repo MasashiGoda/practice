@@ -108,4 +108,13 @@
 - 要約: 既存の `<li>` マークアップをJinjaマクロに切り出しただけでエスケープ挙動は変更前と同一(`|safe`/`Markup` 未使用)。表示の分割(`selectattr`/`rejectattr`)は既存の `todos` 取得結果をテンプレート側で分けるのみで、新しいDBクエリ・ルート・認可境界は発生していない。`app.py` は今回無変更。
 - **指摘なし**("No qualifying vulnerabilities found.")
 
-## ステータス: レビュー合格(2026-09-13)
+## マージ
+
+- 方式: PRベース(GitHub `MasashiGoda/practice`)。`feature/0002-completed-section` をpushし、PR #2 を作成、GitHub上でユーザーがマージ。
+- マージコミット: `3aa0d21`(`Merge pull request #2 from MasashiGoda/feature/0002-completed-section`)、マージ先: `master`
+- 補足: `/merge` コマンドのドキュメント修正コミット(`6c9307c`)がPRマージのタイミングよりわずかに後にリモートへ届いたため、
+  PR #2 には含まれず孤立していた。ユーザーの端末で `master` に対して `cherry-pick` → `push` してもらい、
+  `68eb1c0` として `master` に取り込み済み。
+- ローカル `master` を `origin/master`(`68eb1c0`)に同期後、`PYTHONPATH=./vendor python3 -m pytest tests/ -q` で11件全て合格を再確認済み。
+
+## ステータス: マージ済み(2026-09-13)
