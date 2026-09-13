@@ -11,8 +11,14 @@
 
     <form action="{{ url_for('create_todo') }}" method="post" class="add-form">
       <input type="text" name="title" placeholder="やることを入力..." autofocus required>
-      <input type="date" name="planned_date" aria-label="計画日">
-      <input type="date" name="due_date" aria-label="期限日">
+      <label class="date-field">
+        計画日
+        <input type="date" name="planned_date">
+      </label>
+      <label class="date-field">
+        期限日
+        <input type="date" name="due_date">
+      </label>
       <button type="submit">追加</button>
     </form>
 
