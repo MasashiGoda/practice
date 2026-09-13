@@ -50,4 +50,33 @@
 - 全タスクが完了済みのとき、「タスクはまだありません」が表示されないこと。
 - 既存テスト(一覧・追加・トグル・削除・日付表示)がすべて引き続き通ること。
 
-## ステータス: 承認済み(2026-09-13)
+## 実装メモ
+
+- 変更ファイル: `templates/index.html`, `static/style.css`, `tests/test_todos.py`
+- `templates/index.html`: `<li>` の描画を `{% macro render_todo(todo) %}` として1箇所にまとめ、
+  未完了リスト・完了済みリストの両方から呼び出す形にして重複を回避。
+  `todos | rejectattr('done') | list` / `todos | selectattr('done') | list` で分割(SQL・スキーマは無変更)。
+  完了済みが1件以上のときのみ `<details class="completed-section"><summary>完了済み (N件)</summary>...</details>` を描画。
+  空状態(「タスクはまだありません」)は未完了・完了済みの両方が0件のときのみ表示するよう分岐を追加。
+- `static/style.css`: `.completed-section` / `summary` のスタイルを追加(既存の `--muted` トーンを踏襲)。
+- TDDサイクルの実施メモ: 1ユニット目(完了済みセクションの表示)はRed→Greenで実装。以降の3ユニット
+  (完了0件で非表示/混在時の重複なし分割/全完了時に空メッセージを出さない)は、1ユニット目の実装
+  (`{% if completed %}` ガードと `rejectattr`/`selectattr` による分割)が副次的に満たしていたため、
+  テスト追加時点で最初からGreenだった。実装漏れがないことをテストで確認した上で記録している。
+
+## テスト結果
+
+- 実行コマンド: `PYTHONPATH=./vendor python3 -m pytest tests/ -q`(生ログ: `reports/0002-pytest.txt`)
+- 追加テスト(`tests/test_todos.py`):
+  - `test_completed_todo_appears_in_collapsible_section`
+  - `test_no_completed_section_when_nothing_done`
+  - `test_active_and_completed_lists_split_without_duplication`
+  - `test_all_done_does_not_show_empty_message`
+- 結果: 既存7件 + 新規4件 = **11 passed**
+
+## セキュリティチェック
+
+- 実行コマンド: `PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt`(生ログ: `reports/0002-bandit.txt`)
+- 結果: **No issues identified.**(Medium以上の重要度・確信度の指摘なし。既存の `# nosec B201` 以外の抑制は追加していない)
+
+## ステータス: テスト合格(2026-09-13)
