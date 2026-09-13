@@ -22,32 +22,54 @@
       <button type="submit">追加</button>
     </form>
 
+    {% macro render_todo(todo) %}
+    <li class="{{ 'done' if todo.done else '' }}">
+      <form action="{{ url_for('toggle_todo', todo_id=todo.id) }}" method="post" class="toggle-form">
+        <button type="submit" class="toggle-btn" aria-label="完了切替">
+          {{ '☑' if todo.done else '☐' }}
+        </button>
+      </form>
+      <div class="content">
+        <span class="title">{{ todo.title }}</span>
+        {% if todo.planned_date or todo.due_date %}
+        <span class="dates">
+          {%- if todo.planned_date %}計画: {{ todo.planned_date }}{% endif -%}
+          {%- if todo.planned_date and todo.due_date %} / {% endif -%}
+          {%- if todo.due_date %}期限: {{ todo.due_date }}{% endif -%}
+        </span>
+        {% endif %}
+      </div>
+      <form action="{{ url_for('delete_todo', todo_id=todo.id) }}" method="post" class="delete-form">
+        <button type="submit" class="delete-btn" aria-label="削除">✕</button>
+      </form>
+    </li>
+    {% endmacro %}
+
+    {% set incomplete = todos | rejectattr('done') | list %}
+    {% set completed = todos | selectattr('done') | list %}
+
+    {% if not incomplete and not completed %}
     <ul class="todo-list">
-      {% for todo in todos %}
-      <li class="{{ 'done' if todo.done else '' }}">
-        <form action="{{ url_for('toggle_todo', todo_id=todo.id) }}" method="post" class="toggle-form">
-          <button type="submit" class="toggle-btn" aria-label="完了切替">
-            {{ '☑' if todo.done else '☐' }}
-          </button>
-        </form>
-        <div class="content">
-          <span class="title">{{ todo.title }}</span>
-          {% if todo.planned_date or todo.due_date %}
-          <span class="dates">
-            {%- if todo.planned_date %}計画: {{ todo.planned_date }}{% endif -%}
-            {%- if todo.planned_date and todo.due_date %} / {% endif -%}
-            {%- if todo.due_date %}期限: {{ todo.due_date }}{% endif -%}
-          </span>
-          {% endif %}
-        </div>
-        <form action="{{ url_for('delete_todo', todo_id=todo.id) }}" method="post" class="delete-form">
-          <button type="submit" class="delete-btn" aria-label="削除">✕</button>
-        </form>
-      </li>
-      {% else %}
       <li class="empty">タスクはまだありません</li>
+    </ul>
+    {% elif incomplete %}
+    <ul class="todo-list">
+      {% for todo in incomplete %}
+      {{ render_todo(todo) }}
       {% endfor %}
     </ul>
+    {% endif %}
+
+    {% if completed %}
+    <details class="completed-section">
+      <summary>完了済み ({{ completed | length }}件)</summary>
+      <ul class="todo-list">
+        {% for todo in completed %}
+        {{ render_todo(todo) }}
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
   </main>
 </body>
 </html>
