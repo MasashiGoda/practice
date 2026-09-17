@@ -326,4 +326,4 @@ LLMレビューでは新規指摘として扱っていない。
 
 生ログ: [reports/0003-security-review.md](../reports/0003-security-review.md)
 
-## ステータス: レビュー合格
+## ステータス: マージ済み(PR #3, マージコミット 4e926d5)
