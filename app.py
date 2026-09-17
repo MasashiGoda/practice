@@ -13,6 +13,10 @@ app = Flask(__name__)
 app.config.setdefault("DATABASE", str(DB_PATH))
 app.secret_key = secrets.token_hex(32)
 
+# Used to keep login timing independent of whether the username exists,
+# so check_password_hash always runs the same scrypt work either way.
+_DUMMY_PASSWORD_HASH = generate_password_hash(secrets.token_hex(16))
+
 
 def get_db():
     if "db" not in g:
@@ -107,7 +111,8 @@ def login():
         user = db.execute(
             "SELECT * FROM users WHERE username = ?", (username,)
         ).fetchone()
-        if user is None or not check_password_hash(user["password_hash"], password):
+        password_hash = user["password_hash"] if user else _DUMMY_PASSWORD_HASH
+        if user is None or not check_password_hash(password_hash, password):
             error = "ユーザー名またはパスワードが正しくありません"
         else:
             session.clear()
@@ -122,14 +127,15 @@ def logout():
     return redirect(url_for("login"))
 
 
+def _all_users(db):
+    return db.execute("SELECT * FROM users ORDER BY is_admin DESC, id ASC").fetchall()
+
+
 @app.route("/admin/users", methods=["GET"])
 @admin_required
 def admin_users():
     db = get_db()
-    users = db.execute(
-        "SELECT * FROM users ORDER BY is_admin DESC, id ASC"
-    ).fetchall()
-    return render_template("admin_users.html", users=users, error=None)
+    return render_template("admin_users.html", users=_all_users(db), error=None)
 
 
 @app.route("/admin/users", methods=["POST"])
@@ -154,10 +160,7 @@ def create_user():
             error = "登録できる一般ユーザー数の上限(10人)に達しています"
 
     if error:
-        users = db.execute(
-            "SELECT * FROM users ORDER BY is_admin DESC, id ASC"
-        ).fetchall()
-        return render_template("admin_users.html", users=users, error=error), 400
+        return render_template("admin_users.html", users=_all_users(db), error=error), 400
 
     db.execute(
         "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, 0)",

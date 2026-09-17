@@ -35,39 +35,41 @@
       <button type="submit">ユーザーを追加</button>
     </form>
 
-    <table class="user-table">
-      <thead>
-        <tr>
-          <th>ユーザー名</th>
-          <th>権限</th>
-          <th>作成日時</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for user in users %}
-        <tr>
-          <td>{{ user.username }}</td>
-          <td>
-            {% if user.is_admin %}
-            <span class="admin-badge">管理者</span>
-            {% else %}
-            一般
-            {% endif %}
-          </td>
-          <td>{{ user.created_at }}</td>
-          <td>
-            {% if not user.is_admin %}
-            <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post"
-                  class="delete-form" onsubmit="return confirm('このユーザーを削除します。よろしいですか？');">
-              <button type="submit" class="delete-btn" aria-label="削除">✕</button>
-            </form>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="user-table-wrapper">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>ユーザー名</th>
+            <th>権限</th>
+            <th>作成日時</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.username }}</td>
+            <td>
+              {% if user.is_admin %}
+              <span class="admin-badge">管理者</span>
+              {% else %}
+              一般
+              {% endif %}
+            </td>
+            <td>{{ user.created_at }}</td>
+            <td>
+              {% if not user.is_admin %}
+              <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post"
+                    class="delete-form" onsubmit="return confirm('このユーザーを削除します。よろしいですか？');">
+                <button type="submit" class="delete-btn" aria-label="削除">✕</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </main>
 </body>
 </html>
