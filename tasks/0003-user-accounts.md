@@ -200,4 +200,67 @@ TDD(Red→Green)で、以下の単位ごとに「失敗するテストを先に�
 最後に `bandit` によるセキュリティチェックも行う(パスワードハッシュ化・セッション周りは
 `werkzeug`/Flask標準機能に任せているため、`bandit` 上の新規指摘は出ない見込みだが確認する)。
 
-## ステータス: 承認済み(2026-09-17)
+## 実装メモ
+
+- 変更したファイル:
+  - `app.py`: `users` テーブル追加(`is_admin` 列込み)、`init_db()` での `admin`/`admin` 自動シード、
+    `app.secret_key`(プロセス起動時にランダム生成)、`login_required`/`admin_required` デコレータ、
+    `/login`・`/logout`・`GET/POST /admin/users`・`POST /admin/users/<id>/delete` を新設。
+    既存の `/`, `POST /todos`, `toggle`, `delete` は `@login_required` を付与し、SQLに
+    `user_id = ?` 条件を追加(IDOR対策込み)。
+  - `templates/login.html`(新規)、`templates/admin_users.html`(新規、ユーザー作成フォーム+一覧+
+    管理者行には削除ボタン非表示)、`templates/index.html`(ヘッダーにユーザー名・ログアウト・
+    管理者のみ「ユーザー管理」リンクを追加)。
+  - `static/style.css`: `.topbar`, `.auth-main`/`.auth-form`, `.flash-error`, `.user-table`,
+    `.admin-badge` を追加。
+  - `tests/conftest.py`: `_configured_app`(共通の一時DBセットアップ)、`raw_client`(未ログイン)、
+    `admin_client`(デフォルト管理者ログイン済み)、`client`(admin経由で作成した一般ユーザー
+    `testuser`でログイン済み)の4フィクスチャに再構成。
+  - `tests/test_auth.py`, `tests/test_admin_users.py`, `tests/test_multi_user_todos.py`(新規)。
+- 実装上の判断:
+  - ユーザー削除時は `PRAGMA foreign_keys` に頼らず、`app.py` 側で明示的に
+    `DELETE FROM todos WHERE user_id = ?` → `DELETE FROM users WHERE id = ?` の順で実行(計画どおり)。
+  - 一般ユーザー数の上限判定は `SELECT COUNT(*) FROM users WHERE is_admin = 0` とし、`admin` を
+    含めない(計画で確定した解釈どおり)。
+  - `admin_required` は非管理者に対して `403 Forbidden`(プレーンテキスト)を返す方針とした
+    (計画では「403または適切なリダイレクト」としていたが、管理者専用ページへの誤操作を明確に
+    伝える意味で403を採用)。
+  - テストフィクスチャは `with app.test_client() as client:` を使わず、素の `test_client()` を返す
+    形に変更した。理由: `with` はレスポンス後もリクエストコンテキストを保持する仕様のため、
+    同一テスト内で複数のクライアント(admin用・一般ユーザー用)を交互に操作すると
+    Flaskのコンテキストスタックが壊れる(`AssertionError: Popped wrong request context`)ことが
+    実装中に判明したため。今回のテストでは操作後のテンプレートコンテキスト確認は不要なので、
+    素の `test_client()` で問題ない。
+  - マルチユーザー分離のIDOR対策(`toggle`/`delete` のSQLから `AND user_id = ?` を一時的に外す)を
+    手動で検証し、`tests/test_multi_user_todos.py` がその欠陥を確実に検知することを確認した
+    (その後すぐ元に戻した)。
+
+## テスト結果
+
+- `PYTHONPATH=./vendor python3 -m pytest tests/ -q` → **27 passed**(既存の `tests/test_todos.py`
+  11件は無修正のまま green、新規16件を追加: `test_auth.py` 6件、`test_admin_users.py` 8件、
+  `test_multi_user_todos.py` 2件)。
+- 生ログ: [reports/0003-pytest.txt](../reports/0003-pytest.txt)
+- 追加したテストの要約:
+  - ログイン成功・失敗(誤パスワード/未知のユーザー名)、ログアウト、未ログイン時の各保護ルートへの
+    リダイレクト。
+  - 管理者以外による `GET/POST /admin/users`・`POST /admin/users/<id>/delete` の拒否(403)。
+  - 管理者によるユーザー作成(成功・重複ユーザー名・`admin`との重複・一般ユーザー10人到達での拒否)。
+  - 管理者によるユーザー削除(削除成功・紐づくtodoの削除・枠の再利用・`admin`自身の削除拒否)。
+  - マルチユーザー分離(他ユーザーのtodoが見えないこと、他ユーザーのtodo IDに対する
+    toggle/deleteが効かないこと)。
+
+## セキュリティチェック
+
+- `PYTHONPATH=./vendor python3 -m bandit -r . -x ./vendor,./tests -ll -ii -f txt` →
+  **No issues identified.**(Medium以上の指摘はゼロ)
+- 生ログ: [reports/0003-bandit.txt](../reports/0003-bandit.txt)
+- `# nosec` で明示的に許容した箇所: `app.py` の `init_db()` 内、デフォルト管理者のパスワード
+  リテラル `"admin"` に対して `# nosec B106 -- 練習用ローカルアプリの初期管理者パスワード。
+  ユーザー指示による固定値`。理由: ユーザーからの明示的な指示で `admin`/`admin` を初期値とする
+  ことが決まっており、本番運用を想定しないローカル練習用アプリという前提(既存の `debug=True` の
+  `# nosec` と同じ考え方)で受け入れる。Bandit上はLow重要度・Medium確信度の指摘であり、
+  「Medium以上は修正必須」という基準には該当しないが、意図的な選択であることを明示するために
+  `nosec` コメントを付けている。
+
+## ステータス: テスト合格
