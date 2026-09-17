@@ -7,6 +7,18 @@
 </head>
 <body>
   <main>
+    <header class="topbar">
+      <span class="username">{{ g.user.username }}</span>
+      <nav class="topbar-nav">
+        {% if g.user.is_admin %}
+        <a href="{{ url_for('admin_users') }}">ユーザー管理</a>
+        {% endif %}
+      </nav>
+      <form action="{{ url_for('logout') }}" method="post" class="logout-form">
+        <button type="submit">ログアウト</button>
+      </form>
+    </header>
+
     <h1>TODOリスト</h1>
 
     <form action="{{ url_for('create_todo') }}" method="post" class="add-form">
